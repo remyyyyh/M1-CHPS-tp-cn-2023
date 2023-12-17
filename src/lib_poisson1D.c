@@ -28,8 +28,10 @@ void set_GB_operator_colMajor_poisson1D(double *AB, int *lab, int *la, int *kv)
       AB[iterator + 2 + *kv] = -1;
     }
 
-    iterator += *lab ;
+    iterator += *lab;
   }
+
+  return;
 }
 
 void set_GB_operator_colMajor_poisson1D_Id(double *AB, int *lab, int *la, int *kv)
@@ -39,13 +41,20 @@ void set_GB_operator_colMajor_poisson1D_Id(double *AB, int *lab, int *la, int *k
   for (int i = 0; i < (*la); i++)
   {
     AB[iterator + 1 + *kv] = 1;
-    iterator += *lab ;
+    iterator += *lab;
   }
-
+  return 0;
 }
 
 void set_dense_RHS_DBC_1D(double *RHS, int *la, double *BC0, double *BC1)
 {
+  RHS[0] = *BC0;
+  RHS[*la - 1] = *BC1;
+  for (int i = 1; i < *la - 1; ++i)
+  {
+    RHS[i] = 0;
+  }
+  ;
 }
 
 void set_analytical_solution_DBC_1D(double *EX_SOL, double *X, int *la, double *BC0, double *BC1)
