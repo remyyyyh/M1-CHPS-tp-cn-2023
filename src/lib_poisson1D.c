@@ -11,21 +11,21 @@ void set_GB_operator_colMajor_poisson1D(double *AB, int *lab, int *la, int *kv)
   {
     if (i == 0)
     {
-      AB[iterator + 1 + *kv] = 2;
-      AB[iterator + 2 + *kv] = -1;
+      AB[iterator + 1 + *kv] = 2.0;
+      AB[iterator + 2 + *kv] = -1.0;
     }
 
     else if (i == (*la) - 1)
     {
-      AB[iterator + *kv] = -1;
-      AB[iterator + 1 + *kv] = 2;
+      AB[iterator + *kv] = -1.0;
+      AB[iterator + 1 + *kv] = 2.0;
     }
 
     else
     {
-      AB[iterator + *kv] = -1;
-      AB[iterator + 1 + *kv] = 2;
-      AB[iterator + 2 + *kv] = -1;
+      AB[iterator + *kv] = -1.0;
+      AB[iterator + 1 + *kv] = 2.0;
+      AB[iterator + 2 + *kv] = -1.0;
     }
 
     iterator += *lab;
@@ -40,10 +40,10 @@ void set_GB_operator_colMajor_poisson1D_Id(double *AB, int *lab, int *la, int *k
   int iterator = 0;
   for (int i = 0; i < (*la); i++)
   {
-    AB[iterator + 1 + *kv] = 1;
+    AB[iterator + 1 + *kv] = 1.0;
     iterator += *lab;
   }
-  return 0;
+  return;
 }
 
 void set_dense_RHS_DBC_1D(double *RHS, int *la, double *BC0, double *BC1)
@@ -52,17 +52,30 @@ void set_dense_RHS_DBC_1D(double *RHS, int *la, double *BC0, double *BC1)
   RHS[*la - 1] = *BC1;
   for (int i = 1; i < *la - 1; ++i)
   {
-    RHS[i] = 0;
+    RHS[i] = 0.0;
   }
-  ;
+  return;
 }
 
+
+// Solution analytique à notre probleme : T(x) = T0 + x(T1 − T0)
 void set_analytical_solution_DBC_1D(double *EX_SOL, double *X, int *la, double *BC0, double *BC1)
 {
+  for (int i = 0; i < (*la); i++)
+  {
+    EX_SOL[i] = *BC0 + X[i] * (*BC1 - *BC0);
+  }
+  return;
 }
 
 void set_grid_points_1D(double *x, int *la)
 {
+  double h = 1.0 / (*la + 1);
+  for (int i = 0; i < (*la); i++)
+  {
+    x[i] = (i + 1) * h;
+  }
+  return;
 }
 
 void write_GB_operator_rowMajor_poisson1D(double *AB, int *lab, int *la, char *filename)
