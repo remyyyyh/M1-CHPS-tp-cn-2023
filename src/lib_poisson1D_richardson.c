@@ -102,5 +102,38 @@ void extract_MB_gauss_seidel_tridiag(double *AB, double *MB, int *lab, int *la, 
 void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int *la, int *ku, int *kl, double *tol, int *maxit, double *resvec, int *nbite)
 {
 
+  double *Y = malloc(*la * sizeof(double));
+  double norme_b = cblas_dnrm2(*la, RHS, 1);
+
+  int *ipiv = malloc(*la * sizeof(int));
+  int info = 0;
+  int NRHS = 1;
+  int ku_moins1 = *ku - 1;
+
+  // Factorisation LU
+  dgbtrf_(la, la, kl, &ku_moins1, MB, lab, ipiv, &info);
+
+  for ((*nbite) = 0; (*nbite) < *maxit; (*nbite)++)
+  {
+    // Copie de RHS => Y
+    cblas_dcopy(*la, RHS, 1, Y, 1);
+
+    // b = b - Ax
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, *la, *la, *kl, *ku, -1.0, AB, *lab, X, 1, 1.0, Y, 1);
+
+    // Calcul du residu
+    resvec[*nbite] = cblas_dnrm2(*la, Y, 1) / norme_b;
+
+    // b = b/M | b = (b - Ax)/M
+    dgbtrs_("N", la, kl, &ku_moins1, &NRHS, MB, lab, ipiv, Y, la, &info);
+
+    // x = x + b | x = x + (b - Ax)/M
+    cblas_daxpy(*la, 1, Y, 1, X, 1);
+    if (resvec[*nbite] <= *tol)
+      break;
+  }
+  free(Y);
+  free(ipiv);
+
   return;
 }
