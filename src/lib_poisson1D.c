@@ -99,17 +99,19 @@ int indexABCol(int i, int j, int *lab)
 
 int dgbtrftridiag(int *la, int *n, int *kl, int *ku, double *AB, int *lab, int *ipiv, int *info)
 {
-  // ipiv le vecteur qui indique les permutations
   ipiv[0] = 1;
-  info = 0;
-  int iterator = 0;
+  *info = 0;
+  int iterator = *lab;
+
   for (int i = 1; i < *la; i++)
   {
     AB[iterator - 1] /= AB[iterator - 2];
     AB[iterator + *lab - 2] -= AB[iterator - 1] * AB[iterator + *lab - 3];
     ipiv[i] = i + 1;
+
     iterator += *lab;
   }
+
   return *info;
 }
 
@@ -224,7 +226,6 @@ double *dcsrmv(int *n, double *AA, int *JA, int *IA, double *vec)
   }
   return res;
 }
-
 
 double *dcscmv(int *n, double *AA, int *JA, int *IA, double *vec)
 {
