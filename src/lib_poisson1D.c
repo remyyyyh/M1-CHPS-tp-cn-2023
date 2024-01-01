@@ -79,7 +79,17 @@ void set_grid_points_1D(double *x, int *la)
 
 double relative_forward_error(double *x, double *y, int *la)
 {
-  return 0;
+  double norm_xy = 0;
+  double norm_x = 0;
+  for (int i = 0; i < *la; ++i)
+  {
+    double ecart = x[i] - y[i];
+    norm_x += x[i] + x[i];
+    norm_xy += ecart * ecart;
+  }
+  norm_x = sqrt(norm_x);
+  norm_xy = sqrt(norm_xy);
+  return norm_xy / norm_x;
 }
 
 int indexABCol(int i, int j, int *lab)
@@ -101,4 +111,131 @@ int dgbtrftridiag(int *la, int *n, int *kl, int *ku, double *AB, int *lab, int *
     iterator += *lab;
   }
   return *info;
+}
+
+void set_CSR_poisson1D(int *n, double *AA, int *JA, int *IA)
+{
+  // taille AA = (nb element non nul * sizeof(double));
+  // taille JA = (nb element non nul * sizeof(double));
+  // taille IA = ( (n+1)*sizeof(double));
+
+  int iterator = 0;
+
+  for (int i = 0; i < *n; ++i)
+  {
+    if (i == 0)
+    {
+      IA[i] = i;
+      AA[iterator] = 2;
+      AA[iterator + 1] = -1;
+
+      JA[iterator] = i;
+      JA[iterator + 1] = i + 1;
+
+      iterator += 2;
+    }
+    else if (i == *n - 1)
+    {
+      IA[i] = i;
+      AA[iterator] = -1;
+      AA[iterator + 1] = 2;
+
+      JA[iterator] = i;
+      JA[iterator + 1] = i + 1;
+
+      iterator += 2;
+    }
+    else
+    {
+      IA[i] = i;
+      AA[iterator] = -1;
+      AA[iterator + 1] = 2;
+      AA[iterator + 2] = -1;
+
+      JA[iterator] = i - 1;
+      JA[iterator + 1] = i;
+      JA[iterator + 2] = i + 1;
+
+      iterator += 3;
+    }
+  }
+  return;
+}
+
+void set_CSC_poisson1D(int *n, double *AA, int *JA, int *IA)
+{
+  // AA = malloc(nb element non nul * sizeof(double));
+  // JA = malloc(nb element non nul * sizeof(double));
+  // IA = malloc( (n+1)*sizeof(double));
+
+  int iterator = 0;
+
+  for (int i = 0; i < *n; ++i)
+  {
+    if (i == 0)
+    {
+      IA[i] = iterator;
+      AA[iterator] = 2;
+      AA[iterator + 1] = -1;
+
+      JA[iterator] = i;
+      JA[iterator + 1] = i + 1;
+
+      iterator += 2;
+    }
+    else if (i == *n - 1)
+    {
+      IA[i] = iterator;
+      AA[iterator] = -1;
+      AA[iterator + 1] = 2;
+
+      JA[iterator] = i;
+      JA[iterator + 1] = i + 1;
+
+      iterator += 2;
+    }
+    else
+    {
+      IA[i] = iterator;
+      AA[iterator] = -1;
+      AA[iterator + 1] = 2;
+      AA[iterator + 2] = -1;
+
+      JA[iterator] = i - 1;
+      JA[iterator + 1] = i;
+      JA[iterator + 2] = i + 1;
+
+      iterator += 3;
+    }
+  }
+  return;
+}
+
+double *dcsrmv(int *n, double *AA, int *JA, int *IA, double *vec)
+{
+  double *res = malloc(*n * sizeof(double));
+  for (int i = 0; i < *n; i++)
+  {
+    res[i] = 0.0;
+    for (int j = IA[i]; j < IA[i + 1]; j++)
+    {
+      res[i] += AA[j] * vec[JA[j]];
+    }
+  }
+  return res;
+}
+
+
+double *dcscmv(int *n, double *AA, int *JA, int *IA, double *vec)
+{
+  double *res = malloc(*n * sizeof(double));
+  for (int i = 0; i < *n; i++)
+  {
+    res[i] = 0.0;
+    for (int j = IA[i]; j < IA[i + 1]; j++)
+    {
+      res[i] += AA[j] * vec[JA[j]];
+    }
+  }
+  return res;
 }
