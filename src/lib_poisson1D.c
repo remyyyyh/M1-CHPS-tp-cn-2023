@@ -84,7 +84,7 @@ double relative_forward_error(double *x, double *y, int *la)
   for (int i = 0; i < *la; ++i)
   {
     double ecart = x[i] - y[i];
-    norm_x += x[i] + x[i];
+    norm_x += x[i] * x[i];
     norm_xy += ecart * ecart;
   }
   norm_x = sqrt(norm_x);
