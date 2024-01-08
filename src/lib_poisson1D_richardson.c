@@ -118,7 +118,7 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
     // Copie de RHS => Y
     cblas_dcopy(*la, RHS, 1, Y, 1);
 
-    // X = b - Ax
+    // Y = b - AX
     cblas_dgbmv(CblasColMajor, CblasNoTrans, *la, *la, *kl, *ku, -1.0, AB, *lab, X, 1, 1.0, Y, 1);
 
     // Calcul du residu
@@ -127,7 +127,7 @@ void richardson_MB(double *AB, double *RHS, double *X, double *MB, int *lab, int
     // Y = Y/M | Y = (Y - Ax)/M
     dgbtrs_("N", la, kl, &ku_moins1, &NRHS, MB, lab, ipiv, Y, la, &info);
 
-    // x = x + b | x = x + (b - Ax)/M
+    // X = X + Y | X = X + (b - AX)/M
     cblas_daxpy(*la, 1, Y, 1, X, 1);
     if (resvec[*nbite] <= *tol)
       break;
